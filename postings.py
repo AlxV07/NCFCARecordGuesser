@@ -1,4 +1,4 @@
-finished_rounds = 5
+finished_rounds = 6
 
 rooms = 37
 
