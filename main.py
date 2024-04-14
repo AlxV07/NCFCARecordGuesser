@@ -303,9 +303,9 @@ if __name__ == '__main__':
         t = '===' + tdh.idtoteam[teamid] + '===\n'
         for idx, i in enumerate(matchup):
             if matchup[idx] is None:
-                t += f'{idx+1}. {matchup[idx]}\n'
+                t += f'{idx+1}. None\n'
             else:
-                t += f'{idx + 1}. {tdh.idtoteam[matchup[idx]]}\n'
+                t += f'{idx + 1}. {matchup[idx]} : {tdh.idtoteam[matchup[idx]]}\n'
         color_print(t)
 
     for _team in tdh.matchups.keys():
@@ -319,10 +319,19 @@ if __name__ == '__main__':
         if inp == 'byes':
             _t = '===Byes===\n'
             for _idx, _i in enumerate(tdh.byelist):
-                _t += f'{_idx+1}. {tdh.byelist[_idx]}\n'
+                _t += f'{_idx+1}. {tdh.byelist[_idx]} : {tdh.idtoteam[tdh.byelist[_idx]]} \n'
             color_print(_t)
             continue
         try:
-            print_team(inp, is_id=False)
+            if inp.startswith('team'):
+                _teamid = int(inp.split(' ')[1])
+                color_print(f'{_teamid}: {tdh.idtoteam[_teamid]}\n')
+                continue
+            if inp.startswith('id'):
+                _teamarg = inp.split(' ', maxsplit=1)[1].strip()
+                color_print(f'{_teamarg}: "{tdh.teamtoid[_teamarg]}"\n')
+                continue
+            else:
+                print_team(inp, is_id=False)
         except KeyError:
-            print(f'Invalid team: "{inp}"')
+            print(f'Invalid: "{inp}"')
