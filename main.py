@@ -172,21 +172,31 @@ class Predictor:
         # Notes:
         # Markers: 0=loss, 1=win
 
-        # Not accounting corner cases yet
-        # VERY MESSY: VERY TEMPORARY
+        # Observations:
+        # Each round & in total num wins = total num losses
 
-        # Total num wins = total num losses
+        # Corner Cases:
         # It's possible that nobody is completely_defeated i.e. 0-6
-        # IMPORTANT: Assuming no cross-matching so far; just pure power matching
+        # Cross-matching so far
 
         #
         # =====First bye calculations=====
-        round1bye_team = self.tournament_data.bye_list[0]
+        rd1bye = self.tournament_data.bye_list[0]
+        self.team_records[rd1bye].round1 = 1
 
-        # Team that hits round1.bye in round2 won round1
-        hit_round1bye_team_in_round2 = self.tournament_data.team_hitlists[round1bye_team][1]
-        self.team_records[round1bye_team].round1 = 1  # Bye round1
-        self.team_records[hit_round1bye_team_in_round2].round1 = 1  # Won round1
+        # Team that hits rd1bye in rd2 won rd1
+        hit_rd1bye_in_rd2 = self.tournament_data.team_hitlists[rd1bye][1]
+        self.team_records[hit_rd1bye_in_rd2].round1 = 1
+        matching_lost_team = self.tournament_data.team_hitlists[hit_rd1bye_in_rd2][0]
+        self.team_records[matching_lost_team].round1 = 0
+
+        """
+        This becomes a flooding problem.
+        
+        Problem:
+        Given a team which one one, keep spreading losses / wins you can decipher 
+        based off connecting teams from byeteam
+        """
 
         #
         # =====Second bye calculations=====
