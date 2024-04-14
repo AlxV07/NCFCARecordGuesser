@@ -1,6 +1,6 @@
-finished_rounds = 6
-
 rooms = 37
+is_bye = True
+finished_rounds = 6
 
 round1 = """
 BYE

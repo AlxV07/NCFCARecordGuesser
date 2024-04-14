@@ -1,4 +1,4 @@
-pre_quals = """
+prequals = """
 Ballard, E. / Ballard, J.
 Chen, N. / Lo, E.
 LaRonge, J. / Wiesner, G.
@@ -9,7 +9,7 @@ Fisher, A. / Kang, J.
 Amason, C. / Brandt, S.
 """
 
-atlarge_rankings = """
+rankings = """
 DuFault, J. / Higginbotham, T.
 Burson, M. / Tofte, K.
 Ko, S. / McCoy, C.
