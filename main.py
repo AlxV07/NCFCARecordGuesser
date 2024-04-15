@@ -162,27 +162,46 @@ class AtlargeDataHandler:
 
 
 class Record:
-    def __init__(self):
+    def __init__(self, teamid):
         """
         A team's record.
         0=loss, 1=win
         """
+        self.teamid = teamid
         self.round = [None, None, None, None, None, None]  # 0-based
-        self.curround = 0
 
-    def add_win(self):
+    def win_round(self, rd):
         """
-        Adds a win to the team's record & increments `curround`.
+        Sets round `rd` to a win.
+        `rd`: 0-based debate round
         """
-        self.round[self.curround] = 1
-        self.curround += 1
+        self.round[rd] = 1
 
-    def add_loss(self):
+    def lose_round(self, rd):
         """
-        Adds a loss to the team's record & increments `curround`.
+        Sets round `rd` to a loss.
+        `rd`: 0-based debate round
         """
-        self.round[self.curround] = 0
-        self.curround += 1
+        self.round[rd] = 0
+
+    def round_set(self, rd):
+        """
+        Returns False if round[rd] is None, True otherwise
+        rd: 0-based debate round
+        """
+        return self.round[rd] is not None
+
+    def round_won(self, rd):
+        """
+        Returns True if round==1 (won), False if round==0 (loss), else None
+        rd: 0-based debate round
+        """
+        if self.round[rd] == 1:
+            return True
+        elif self.round[rd] == 0:
+            return False
+        else:
+            return None
 
     def get_record(self):
         """
@@ -207,57 +226,92 @@ class Predictor:
         """
         self.tdh = tdh
         self.adh = adh
-        self.teamidtorecord = {team: Record() for team in tdh.matchups.keys()}
+        self.teamidtorecord = {teamid: Record(teamid) for teamid in tdh.matchups.keys()}
 
-    def predict_round1(self):
+    def predict_round(self):
         #  Assume: no_cross_pairing, is_bye, pure powermatching
 
-        byeteamid = self.tdh.byelist[0]  # bye1
-        self.teamidtorecord[byeteamid].add_win()
+        bye1teamid = self.tdh.byelist[0]  # bye1
+        self.teamidtorecord[bye1teamid].win_round(0)
 
-        team_q = [byeteamid]
-        while len(team_q) > 0:
+        # bye2teamid = self.tdh.byelist[1]  # bye2
+        # self.teamidtorecord[bye2teamid].lose_round(0)
+        # self.teamidtorecord[bye2teamid].win_round(1)
+
+        # bye3teamid = self.tdh.byelist[2]  # bye3
+        # # Assume no wonky stuff: bye3.record = 0-2
+        # self.teamidtorecord[bye3teamid].lose_round(0)
+        # self.teamidtorecord[bye3teamid].lose_round(1)
+        # self.teamidtorecord[bye2teamid].win_round(2)
+
+        # Run flood calculation
+        team_q = [bye1teamid]
+        while len(team_q) > 0:  # flood queue
             curteamid = team_q.pop(0)
-            r = self.teamidtorecord[curteamid]
-            assert r.curround == 1
+            cur_r = self.teamidtorecord[curteamid]
+            m = self.tdh.matchups[curteamid]
 
-            if r.get_record() == (1, 0):
-                lostrd1teamid = self.tdh.matchups[curteamid][0]  # Beaten by curteamid
-                if lostrd1teamid is not None and self.teamidtorecord[lostrd1teamid].curround == 0:
-                    self.teamidtorecord[lostrd1teamid].add_loss()
-                    team_q.append(lostrd1teamid)
+            for rd in range(6):
+                round_won = cur_r.round_won(rd)
+                if round_won is None:  # Not predicted yet
+                    continue
 
-                wonrd1teamid = self.tdh.matchups[curteamid][1]  # Powermatched 1-0 with curteamid
-                if wonrd1teamid is not None and self.teamidtorecord[wonrd1teamid].curround == 0:
-                    self.teamidtorecord[wonrd1teamid].add_win()
-                    team_q.append(wonrd1teamid)
+                hit_team = m[rd]
 
-            elif r.get_record() == (0, 1):
-                wonrd1teamid = self.tdh.matchups[curteamid][0]  # Beat curteamid
-                if wonrd1teamid is not None and self.teamidtorecord[wonrd1teamid].curround == 0:
-                    self.teamidtorecord[wonrd1teamid].add_win()
-                    team_q.append(wonrd1teamid)
+                if not round_won:
+                    #  Update hit_team.r to win round
+                    if hit_team is not None:
+                        hit_r = self.teamidtorecord[hit_team]
+                        if not hit_r.round_set(rd):
+                            hit_r.win_round(rd)
+                            team_q.append(hit_team)
+                        elif not hit_r.round_won(rd):  # conflicting record
+                            raise Exception('Conflicting record:', hit_team, str(hit_r))
 
-                lostrd1teamid = self.tdh.matchups[curteamid][1]  # Powermatched 0-1 with curteamid
-                if lostrd1teamid is not None and self.teamidtorecord[lostrd1teamid].curround == 0:
-                    self.teamidtorecord[lostrd1teamid].add_loss()
-                    team_q.append(lostrd1teamid)
+                    # Update record of team that is hit in next round
+                    if rd == 0:
+                        next_hit_team = m[1]
+                        if next_hit_team is not None:
+                            next_hit_r = self.teamidtorecord[next_hit_team]
+                            if not next_hit_r.round_set(0):  # Record of next team hit should be 0-1
+                                next_hit_r.lose_round(0)
+                                team_q.append(next_hit_team)
+                            elif next_hit_r.round_won(0):  # conflicting record
+                                raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
 
-        # Currently stops @ Glass/Glass because they get bye in round2; move onto next step for round1 calcs?
+                    continue
+
+                elif round_won:
+                    #  Update hit_team.r to lose round
+                    if hit_team is not None:
+                        hit_r = self.teamidtorecord[hit_team]
+                        if not hit_r.round_set(rd):
+                            hit_r.lose_round(rd)
+                            team_q.append(hit_team)
+                        elif hit_r.round_won(rd):  # conflicting record
+                            raise Exception('Conflicting record:', hit_team, str(hit_r))
+
+                    # Update record of team that is hit in next round
+                    if rd == 0:
+                        next_hit_team = m[1]
+                        if next_hit_team is not None:
+                            next_hit_r = self.teamidtorecord[next_hit_team]
+                            if not next_hit_r.round_set(0):  # Record of next team hit should be 1-0
+                                next_hit_r.win_round(0)
+                                team_q.append(next_hit_team)
+                            elif not next_hit_r.round_won(0):  # conflicting record
+                                raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
+
+                    continue
+
+                # assign respective win / losses to teams in round, powermatched, etc.
+
+                # if round not set, assign respective win / loss: else, raise conflict error
+
+                # append team to q
+
         for teamid in self.teamidtorecord.keys():
             print(str(teamid).ljust(2), self.teamidtorecord[teamid])
-
-        byeteamid = self.tdh.byelist[2]  # bye3
-        if self.teamidtorecord[byeteamid].curround == 0:
-            #  Assume no wonky stuff: bye3.record = 0-2
-            self.teamidtorecord[byeteamid].add_loss()
-            self.teamidtorecord[byeteamid].add_loss()
-        # Add wins to teams bye3 hit in rd1 & rd2
-        matchup = self.tdh.matchups[byeteamid]
-        if self.teamidtorecord[matchup[0]].curround == 0:
-            self.teamidtorecord[matchup[0]].add_win()
-        if self.teamidtorecord[matchup[1]].curround == 1:
-            self.teamidtorecord[matchup[1]].add_win()
 
 
 if __name__ == '__main__':
@@ -265,7 +319,7 @@ if __name__ == '__main__':
     _adh = AtlargeDataHandler(atlarge_data)
 
     predictor = Predictor(_tdh, _adh)
-    predictor.predict_round1()
+    predictor.predict_round()
 
     def print_al_sorted_rankings():
         print('===AL Sorted Rankings:===')
@@ -287,9 +341,12 @@ if __name__ == '__main__':
                 t += f'{idx + 1}. {matchup[idx]} : {_tdh.idtoteam[matchup[idx]]}\n'
         color_print(t)
 
-    def start_console():
+    def print_all_teams():
         for _team in _tdh.matchups.keys():
             print_team(_team)
+    # print_all_teams()
+
+    def start_console():
         while True:
             inp = input('Team: >>>').strip()
             if inp == 'exit' or len(inp) == 0:
