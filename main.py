@@ -212,7 +212,7 @@ class Predictor:
     def predict_round1(self):
         #  Assume: no_cross_pairing, is_bye, pure powermatching
 
-        byeteamid = self.tdh.byelist[0]
+        byeteamid = self.tdh.byelist[0]  # bye1
         self.teamidtorecord[byeteamid].add_win()
 
         team_q = [byeteamid]
@@ -244,9 +244,20 @@ class Predictor:
                     team_q.append(lostrd1teamid)
 
         # Currently stops @ Glass/Glass because they get bye in round2; move onto next step for round1 calcs?
-
         for teamid in self.teamidtorecord.keys():
             print(str(teamid).ljust(2), self.teamidtorecord[teamid])
+
+        byeteamid = self.tdh.byelist[2]  # bye3
+        if self.teamidtorecord[byeteamid].curround == 0:
+            #  Assume no wonky stuff: bye3.record = 0-2
+            self.teamidtorecord[byeteamid].add_loss()
+            self.teamidtorecord[byeteamid].add_loss()
+        # Add wins to teams bye3 hit in rd1 & rd2
+        matchup = self.tdh.matchups[byeteamid]
+        if self.teamidtorecord[matchup[0]].curround == 0:
+            self.teamidtorecord[matchup[0]].add_win()
+        if self.teamidtorecord[matchup[1]].curround == 1:
+            self.teamidtorecord[matchup[1]].add_win()
 
 
 if __name__ == '__main__':
