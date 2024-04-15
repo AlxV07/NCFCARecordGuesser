@@ -163,175 +163,144 @@ class AtlargeDataHandler:
 
 class Record:
     def __init__(self):
-        # 0=loss, 1=win
-        self.round1 = None
-        self.round2 = None
-        self.round3 = None
-        self.round4 = None
-        self.round5 = None
-        self.round6 = None
+        """
+        A team's record.
+        0=loss, 1=win
+        """
+        self.round = [None, None, None, None, None, None]  # 0-based
+        self.curround = 0
+
+    def add_win(self):
+        """
+        Adds a win to the team's record & increments `curround`.
+        """
+        self.round[self.curround] = 1
+        self.curround += 1
+
+    def add_loss(self):
+        """
+        Adds a loss to the team's record & increments `curround`.
+        """
+        self.round[self.curround] = 0
+        self.curround += 1
 
     def get_record(self):
-        nof_rounds = 1
-        s = self.round1
-        if self.round2 is not None:
-            s += self.round2
-            nof_rounds += 1
-        if self.round3 is not None:
-            s += self.round3
-            nof_rounds += 1
-        if self.round4 is not None:
-            s += self.round4
-            nof_rounds += 1
-        if self.round5 is not None:
-            s += self.round5
-            nof_rounds += 1
-        if self.round6 is not None:
-            s += self.round6
-            nof_rounds += 1
+        """
+        Returns the record of the team in the tuple (won, lost).
+        """
+        nof_rounds = 6 - self.round.count(None)
+        s = 0
+        for r in self.round:
+            if r is not None:
+                s += r
         return s, nof_rounds - s
 
     def __str__(self):
-        nof_rounds = 1
-        s = self.round1
-        if self.round2 is not None:
-            s += self.round2
-            nof_rounds += 1
-        if self.round3 is not None:
-            s += self.round3
-            nof_rounds += 1
-        if self.round4 is not None:
-            s += self.round4
-            nof_rounds += 1
-        if self.round5 is not None:
-            s += self.round5
-            nof_rounds += 1
-        if self.round6 is not None:
-            s += self.round6
-            nof_rounds += 1
-        return f'{s}-{nof_rounds - s}'
+        w, l = self.get_record()
+        return f'{w}-{l}'
 
 
 class Predictor:
-    def __init__(self, td, ad):
+    def __init__(self, tdh: TournamentDataHandler, adh: AtlargeDataHandler):
         """
-        Predict records from Tournament Data (td) and Atlarge Data (ad)
+        Predict records from Tournament Data (td) and Atlarge Data (ad).
         """
-        self.td = td
-        self.al_d = ad
-        self.team_records = {team: Record() for team in td.matchups.keys()}
+        self.tdh = tdh
+        self.adh = adh
+        self.teamidtorecord = {team: Record() for team in tdh.matchups.keys()}
 
-    def predict(self):
-        # Notes:
-        # Markers: 0=loss, 1=win
+    def predict_round1(self):
+        #  Assume: no_cross_pairing, is_bye, pure powermatching
 
-        # Observations:
-        # Each round & in total num wins = total num losses
+        byeteamid = self.tdh.byelist[0]
+        self.teamidtorecord[byeteamid].add_win()
 
-        # Corner Cases:
-        # It's possible that nobody is completely_defeated i.e. 0-6
-        # Cross-matching so far
+        team_q = [byeteamid]
+        while len(team_q) > 0:
+            curteamid = team_q.pop(0)
+            r = self.teamidtorecord[curteamid]
+            assert r.curround == 1
 
-        #
-        # =====First bye calculations=====
-        rd1bye = self.td.byelist[0]
-        self.team_records[rd1bye].round1 = 1
+            if r.get_record() == (1, 0):
+                lostrd1teamid = self.tdh.matchups[curteamid][0]  # Beaten by curteamid
+                if lostrd1teamid is not None and self.teamidtorecord[lostrd1teamid].curround == 0:
+                    self.teamidtorecord[lostrd1teamid].add_loss()
+                    team_q.append(lostrd1teamid)
 
-        # Team that hits rd1bye in rd2 won rd1
-        hit_rd1bye_in_rd2 = self.td.matchups[rd1bye][1]
-        self.team_records[hit_rd1bye_in_rd2].round1 = 1
-        matching_lost_team = self.td.matchups[hit_rd1bye_in_rd2][0]
-        self.team_records[matching_lost_team].round1 = 0
+                wonrd1teamid = self.tdh.matchups[curteamid][1]  # Powermatched 1-0 with curteamid
+                if wonrd1teamid is not None and self.teamidtorecord[wonrd1teamid].curround == 0:
+                    self.teamidtorecord[wonrd1teamid].add_win()
+                    team_q.append(wonrd1teamid)
 
-        """
-        This becomes a flooding problem.
-        
-        Problem:
-        Given a team which one one, keep spreading losses / wins you can decipher 
-        based off connecting teams from byeteam
-        """
+            elif r.get_record() == (0, 1):
+                wonrd1teamid = self.tdh.matchups[curteamid][0]  # Beat curteamid
+                if wonrd1teamid is not None and self.teamidtorecord[wonrd1teamid].curround == 0:
+                    self.teamidtorecord[wonrd1teamid].add_win()
+                    team_q.append(wonrd1teamid)
 
-        #
-        # =====Second bye calculations=====
-        round2bye_team = self.td.byelist[1]
-        self.team_records[round2bye_team].round1 = 0  # round2.bye lost round1
+                lostrd1teamid = self.tdh.matchups[curteamid][1]  # Powermatched 0-1 with curteamid
+                if lostrd1teamid is not None and self.teamidtorecord[lostrd1teamid].curround == 0:
+                    self.teamidtorecord[lostrd1teamid].add_loss()
+                    team_q.append(lostrd1teamid)
 
-        # Team that hit round2.bye in round1 beat round2.bye
-        hit_round2bye_team_in_round1 = self.td.matchups[round2bye_team][0]
-        self.team_records[hit_round2bye_team_in_round1].round1 = 1
+        # Currently stops @ Glass/Glass because they get bye in round2; move onto next step for round1 calcs?
 
-        # Team that hit round2.bye in round2 also lost round1
-        hit_round2bye_team_in_round2 = self.td.matchups[round2bye_team][1]
-        self.team_records[hit_round2bye_team_in_round2].round1 = 0
-        # Team that hit team that hit round2.bye in round2 won round1
-        hit_team_that_hit_round2bye_team_in_round2 = self.td.matchups[hit_round2bye_team_in_round2][0]
-        self.team_records[hit_team_that_hit_round2bye_team_in_round2].round1 = 1
-
-        # Team that hit team that hit team that hit round2.bye in round2 also won round1
-        hit_hit_team_that_hit_round2bye_team_in_round2 = self.td.matchups[hit_round2bye_team_in_round2][0]
-        self.team_records[hit_hit_team_that_hit_round2bye_team_in_round2].round1 = 1
-        # Team that lost to the above team
-        temp_team = self.td.matchups[hit_hit_team_that_hit_round2bye_team_in_round2][0]
-        self.team_records[temp_team].round1 = 0
-
-        # Team that hit this team in round2 also lost round1
-
-        #
-        # =====Third bye calculations=====
-
-        # Has worst record in tourney
-        # Could be: 0-2, 1-1
-        round3bye_team = self.td.byelist[2]
-
-        pass
+        for teamid in self.teamidtorecord.keys():
+            print(str(teamid).ljust(2), self.teamidtorecord[teamid])
 
 
 if __name__ == '__main__':
-    tdh = TournamentDataHandler(tournament_data)
-    adh = AtlargeDataHandler(atlarge_data)
+    _tdh = TournamentDataHandler(tournament_data)
+    _adh = AtlargeDataHandler(atlarge_data)
 
-    print('===AL Sorted Rankings:===')
-    for _i in adh.sorted_rankings:
-        print(_i)
-    print('===End of AL Sorted Rankings===')
+    predictor = Predictor(_tdh, _adh)
+    predictor.predict_round1()
+
+    def print_al_sorted_rankings():
+        print('===AL Sorted Rankings:===')
+        for _i in _adh.sorted_rankings:
+            print(_i)
+        print('===End of AL Sorted Rankings===')
+    # print_al_sorted_rankings()
 
     def print_team(teamid, is_id=True):
         if not is_id:
-            teamid = tdh.teamtoid[teamid]
+            teamid = _tdh.teamtoid[teamid]
 
-        matchup = tdh.matchups[teamid]
-        t = '===' + tdh.idtoteam[teamid] + '===\n'
+        matchup = _tdh.matchups[teamid]
+        t = '===' + _tdh.idtoteam[teamid] + '===\n'
         for idx, i in enumerate(matchup):
             if matchup[idx] is None:
                 t += f'{idx+1}. None\n'
             else:
-                t += f'{idx + 1}. {matchup[idx]} : {tdh.idtoteam[matchup[idx]]}\n'
+                t += f'{idx + 1}. {matchup[idx]} : {_tdh.idtoteam[matchup[idx]]}\n'
         color_print(t)
 
-    for _team in tdh.matchups.keys():
-        print_team(_team)
-
-    while True:
-        inp = input('Team: >>>').strip()
-        if inp == 'exit' or len(inp) == 0:
-            print('Exiting...')
-            break
-        if inp == 'byes':
-            _t = '===Byes===\n'
-            for _idx, _i in enumerate(tdh.byelist):
-                _t += f'{_idx+1}. {tdh.byelist[_idx]} : {tdh.idtoteam[tdh.byelist[_idx]]} \n'
-            color_print(_t)
-            continue
-        try:
-            if inp.startswith('team'):
-                _teamid = int(inp.split(' ')[1])
-                color_print(f'{_teamid}: {tdh.idtoteam[_teamid]}\n')
+    def start_console():
+        for _team in _tdh.matchups.keys():
+            print_team(_team)
+        while True:
+            inp = input('Team: >>>').strip()
+            if inp == 'exit' or len(inp) == 0:
+                print('Exiting...')
+                break
+            if inp == 'byes':
+                _t = '===Byes===\n'
+                for _idx, _i in enumerate(_tdh.byelist):
+                    _t += f'{_idx+1}. {_tdh.byelist[_idx]} : {_tdh.idtoteam[_tdh.byelist[_idx]]} \n'
+                color_print(_t)
                 continue
-            if inp.startswith('id'):
-                _teamarg = inp.split(' ', maxsplit=1)[1].strip()
-                color_print(f'{_teamarg}: "{tdh.teamtoid[_teamarg]}"\n')
-                continue
-            else:
-                print_team(inp, is_id=False)
-        except KeyError:
-            print(f'Invalid: "{inp}"')
+            try:
+                if inp.startswith('team'):
+                    _teamid = int(inp.split(' ')[1])
+                    color_print(f'{_teamid}: "{_tdh.idtoteam[_teamid]}"\n')
+                    continue
+                if inp.startswith('id'):
+                    _teamarg = inp.split(' ', maxsplit=1)[1].strip()
+                    color_print(f'"{_teamarg}": {_tdh.teamtoid[_teamarg]}\n')
+                    continue
+                else:
+                    print_team(inp, is_id=False)
+            except KeyError:
+                print(f'Invalid: "{inp}"')
+    start_console()
