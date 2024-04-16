@@ -234,9 +234,9 @@ class Predictor:
         bye1teamid = self.tdh.byelist[0]  # bye1
         self.teamidtorecord[bye1teamid].win_round(0)
 
-        # bye2teamid = self.tdh.byelist[1]  # bye2
-        # self.teamidtorecord[bye2teamid].lose_round(0)
-        # self.teamidtorecord[bye2teamid].win_round(1)
+        bye2teamid = self.tdh.byelist[1]  # bye2
+        self.teamidtorecord[bye2teamid].lose_round(0)
+        self.teamidtorecord[bye2teamid].win_round(1)
 
         # bye3teamid = self.tdh.byelist[2]  # bye3
         # # Assume no wonky stuff: bye3.record = 0-2
@@ -245,7 +245,7 @@ class Predictor:
         # self.teamidtorecord[bye2teamid].win_round(2)
 
         # Run flood calculation
-        team_q = [bye1teamid]
+        team_q = [bye1teamid, bye2teamid]
         while len(team_q) > 0:  # flood queue
             curteamid = team_q.pop(0)
             cur_r = self.teamidtorecord[curteamid]
@@ -259,48 +259,38 @@ class Predictor:
                 hit_team = m[rd]
 
                 if not round_won:
-                    #  Update hit_team.r to win round
-                    if hit_team is not None:
-                        hit_r = self.teamidtorecord[hit_team]
+                    if hit_team is not None:  # Not bye
+                        hit_r = self.teamidtorecord[hit_team]  # Update hit_team.r to win round
                         if not hit_r.round_set(rd):
                             hit_r.win_round(rd)
                             team_q.append(hit_team)
-                        elif not hit_r.round_won(rd):  # conflicting record
-                            raise Exception('Conflicting record:', hit_team, str(hit_r))
-
-                    # Update record of team that is hit in next round
+                        elif not hit_r.round_won(rd): raise Exception('Conflicting record:', hit_team, str(hit_r))
+                    # Round-specific calculations
                     if rd == 0:
                         next_hit_team = m[1]
-                        if next_hit_team is not None:
+                        if next_hit_team is not None:  # Not bye
                             next_hit_r = self.teamidtorecord[next_hit_team]
                             if not next_hit_r.round_set(0):  # Record of next team hit should be 0-1
                                 next_hit_r.lose_round(0)
                                 team_q.append(next_hit_team)
-                            elif next_hit_r.round_won(0):  # conflicting record
-                                raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
-
-                    continue
+                            elif next_hit_r.round_won(0): raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
 
                 elif round_won:
-                    #  Update hit_team.r to lose round
-                    if hit_team is not None:
-                        hit_r = self.teamidtorecord[hit_team]
+                    if hit_team is not None:  # Not bye
+                        hit_r = self.teamidtorecord[hit_team]  # Update hit_team.r to lose round
                         if not hit_r.round_set(rd):
                             hit_r.lose_round(rd)
                             team_q.append(hit_team)
-                        elif hit_r.round_won(rd):  # conflicting record
-                            raise Exception('Conflicting record:', hit_team, str(hit_r))
-
-                    # Update record of team that is hit in next round
+                        elif hit_r.round_won(rd): raise Exception('Conflicting record:', hit_team, str(hit_r))
+                    # Round-specific calculations
                     if rd == 0:
                         next_hit_team = m[1]
-                        if next_hit_team is not None:
+                        if next_hit_team is not None:  # Not bye
                             next_hit_r = self.teamidtorecord[next_hit_team]
                             if not next_hit_r.round_set(0):  # Record of next team hit should be 1-0
                                 next_hit_r.win_round(0)
                                 team_q.append(next_hit_team)
-                            elif not next_hit_r.round_won(0):  # conflicting record
-                                raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
+                            elif not next_hit_r.round_won(0): raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
 
                     continue
 
