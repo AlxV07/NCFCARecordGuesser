@@ -304,11 +304,9 @@ class Predictor:
 
                     continue
 
-                # assign respective win / losses to teams in round, powermatched, etc.
-
                 # if round not set, assign respective win / loss: else, raise conflict error
 
-                # append team to q
+                # Round3bye: 0-2:  hit_rd1.r.postrd1 = 1-0 (beat cur),  hit_rd1.r.postrd2 = 1-1 (beat cur)
 
         for teamid in self.teamidtorecord.keys():
             print(str(teamid).ljust(2), self.teamidtorecord[teamid])
