@@ -194,6 +194,36 @@ class Record:
         """
         self.round[rd] = 0
 
+    def safe_win_round(self, rd):
+        """
+        Runs win_round only if the round is not already set and not conflicting.
+        If round is already set and the round is marked as a loss (0), raises a conflict error.
+        Returns true if win_round was run, otherwise False.
+        rd: 0-based debate round
+        """
+        if self.round_set(rd):
+            if not self.round_won(rd):
+                raise Exception('Conflicting record:', str(self), rd)
+            return False
+        else:
+            self.win_round(rd)
+            return True
+
+    def safe_lose_round(self, rd):
+        """
+        Runs lose_round only if the round is not already set and not conflicting.
+        If round is already set and the round is marked as a win (1), raises a conflict error.
+        Returns true if lose_round was run, otherwise False.
+        rd: 0-based debate round
+        """
+        if self.round_set(rd):
+            if self.round_won(rd):
+                raise Exception('Conflicting record:', str(self), rd)
+            return False
+        else:
+            self.lose_round(rd)
+            return True
+
     def round_set(self, rd):
         """
         Returns False if round[rd] is None, True otherwise
@@ -226,7 +256,7 @@ class Record:
 
     def __str__(self):
         w, l = self.get_record()
-        return f'{w}-{l}'
+        return f'({w}-{l})|{self.round}'
 
 
 class Predictor:
@@ -248,68 +278,52 @@ class Predictor:
         self.teamidtorecord[bye2teamid].lose_round(0)
         self.teamidtorecord[bye2teamid].win_round(1)
 
-        # bye3teamid = self.tdh.byelist[2]  # bye3
-        # # Assume no wonky stuff: bye3.record = 0-2
-        # self.teamidtorecord[bye3teamid].lose_round(0)
-        # self.teamidtorecord[bye3teamid].lose_round(1)
-        # self.teamidtorecord[bye2teamid].win_round(2)
+        bye3teamid = self.tdh.byelist[2]  # bye3
+        # Assume no wonky stuff: bye3.record post-rd2 = 0-2
+        self.teamidtorecord[bye3teamid].lose_round(0)
+        self.teamidtorecord[bye3teamid].lose_round(1)
+        self.teamidtorecord[bye3teamid].win_round(2)
 
         # Run flood calculation
-        team_q = [bye1teamid, bye2teamid]
-        while len(team_q) > 0:  # flood queue
-            curteamid = team_q.pop(0)
-            cur_r = self.teamidtorecord[curteamid]
-            m = self.tdh.matchups[curteamid]
+        team_q = [bye1teamid, bye2teamid, bye3teamid]
+        while len(team_q) > 0:
+            cur_teamid = team_q.pop(0)
+            cur_record = self.teamidtorecord[cur_teamid]
+            cur_matchups = self.tdh.matchups[cur_teamid]
 
             for rd in range(6):
-                round_won = cur_r.round_won(rd)
+                round_won = cur_record.round_won(rd)
                 if round_won is None:  # Not predicted yet
                     continue
 
-                hit_team = m[rd]
+                hit_teamid = cur_matchups[rd]
+                if hit_teamid is not None:  # Not bye
+                    hit_record = self.teamidtorecord[hit_teamid]
+                    if not round_won:
+                        if hit_record.safe_win_round(rd):  # Update hit_team.r to win round
+                            team_q.append(hit_teamid)  # Add to queue
+                    elif round_won:
+                        if hit_record.safe_lose_round(rd):  # Update hit_team.r to lose round
+                            team_q.append(hit_teamid)  # Add to queue
 
-                if not round_won:
-                    if hit_team is not None:  # Not bye
-                        hit_r = self.teamidtorecord[hit_team]  # Update hit_team.r to win round
-                        if not hit_r.round_set(rd):
-                            hit_r.win_round(rd)
-                            team_q.append(hit_team)
-                        elif not hit_r.round_won(rd): raise Exception('Conflicting record:', hit_team, str(hit_r))
-                    # Round-specific calculations
-                    if rd == 0:
-                        next_hit_team = m[1]
-                        if next_hit_team is not None:  # Not bye
-                            next_hit_r = self.teamidtorecord[next_hit_team]
-                            if not next_hit_r.round_set(0):  # Record of next team hit should be 0-1
-                                next_hit_r.lose_round(0)
-                                team_q.append(next_hit_team)
-                            elif next_hit_r.round_won(0): raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
-
-                elif round_won:
-                    if hit_team is not None:  # Not bye
-                        hit_r = self.teamidtorecord[hit_team]  # Update hit_team.r to lose round
-                        if not hit_r.round_set(rd):
-                            hit_r.lose_round(rd)
-                            team_q.append(hit_team)
-                        elif hit_r.round_won(rd): raise Exception('Conflicting record:', hit_team, str(hit_r))
-                    # Round-specific calculations
-                    if rd == 0:
-                        next_hit_team = m[1]
-                        if next_hit_team is not None:  # Not bye
-                            next_hit_r = self.teamidtorecord[next_hit_team]
-                            if not next_hit_r.round_set(0):  # Record of next team hit should be 1-0
-                                next_hit_r.win_round(0)
-                                team_q.append(next_hit_team)
-                            elif not next_hit_r.round_won(0): raise Exception('Conflicting record:', next_hit_team, str(next_hit_r))
-
-                    continue
-
-                # if round not set, assign respective win / loss: else, raise conflict error
+                # Round-specific calculations
+                if rd == 0:
+                    nexthit_teamid = cur_matchups[1]
+                    if nexthit_teamid is not None:  # Not bye
+                        nexthit_record = self.teamidtorecord[nexthit_teamid]
+                        if not round_won:
+                            if nexthit_record.safe_lose_round(0):
+                                team_q.append(nexthit_teamid)
+                        elif round_won:
+                            if nexthit_record.safe_win_round(0):
+                                team_q.append(nexthit_teamid)
+                elif rd == 1:
+                    pass
 
                 # Round3bye: 0-2:  hit_rd1.r.postrd1 = 1-0 (beat cur),  hit_rd1.r.postrd2 = 1-1 (beat cur)
 
         for teamid in self.teamidtorecord.keys():
-            print(str(teamid).ljust(2), self.teamidtorecord[teamid])
+            color_print(str(self.tdh.idtoteam[teamid].ljust(35)) + ' ' + str(teamid).ljust(2) + ' ' + str(self.teamidtorecord[teamid]))
 
 
 if __name__ == '__main__':
