@@ -99,8 +99,13 @@ class TournamentDataHandler:
         """
         round_postings = list(map(lambda s: s.strip(), self.td.__getattribute__('round' + str(round_num)).strip().split('\n')))
 
+        print('[')
+
         if self.td.is_bye:
             byeteam = round_postings[1].strip()
+
+            print(f'"{byeteam}",')
+
             byeteamid = self.teamtoid[byeteam]
             round_postings = round_postings[2:]
             self.register_bye(byeteamid)
@@ -114,7 +119,12 @@ class TournamentDataHandler:
             team2id = self.teamtoid[team2]
 
             matchup = (team1id, team2id)
+
+            print(f'["{team1}", "{team2}"],')
+
             self.register_matchup(matchup)
+
+        print('],')
 
     def register_all_finished_rounds(self):
         """
