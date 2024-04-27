@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCFCA Record Guesser</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" sizes="16x16 32x32 64x64" href="./potat.jpg">
+</head>
+<body>
+
+<div id="bar">
+    <img src="potat.jpg" alt="Potat">
+
+    <button id="settingsButton">SettingsNI (p)</button>
+    <button id="helpButton">HelpNI (h)</button>
+
+    <label>||</label>
+
+    <label>File:</label>
+    <button id="saveButton">SaveNI (o)</button>
+    <button id="loadButton">LoadNI (l)</button>
+
+    <label>||</label>
+    <label>Selected Team:</label>
+    <button id="wonButton">Won (w)</button>
+    <button id="lostButton">Lost (q)</button>
+    <button id="clearButton">Clear (c)</button>
+    <label id="selectedTeam">null</label>
+</div>
+<div id="credits">
+    <label>Contact: alexander.kai.chen@gmail.com | <a href="https://alxv07.github.io/AboutMe">https://alxv07.github.io/AboutMe/</a></label>
+    <br>
+    <label>Chen/Kuykendall | Region 11 | 23-24 | Sts. Peter & Paul Speech & Debate</label>
+</div>
+
+<br><br>
+
+<table id="mainTable">
+    <thead>
+    <tr>
+        <th>Round 1</th>
+        <th>Round 2</th>
+        <th>Round 3</th>
+        <th>Round 4</th>
+        <th>Round 5</th>
+        <th>Round 6</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Table body will be generated dynamically using JavaScript -->
+    </tbody>
+</table>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>

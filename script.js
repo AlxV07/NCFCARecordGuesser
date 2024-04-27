@@ -111,6 +111,7 @@ let selectedTeam = null
 
 function setSelectedTeam(team) {
     const teamCellIds = tdh.teamCellIds;
+
     if (selectedTeam !== null) {
         for (const teamCellId of teamCellIds[selectedTeam]) {
             tdh.getCell(teamCellId).style.borderColor = ''
@@ -125,6 +126,7 @@ function setSelectedTeam(team) {
             tdh.getCell(teamCellId).style.borderLeftWidth = '3px'
         }
     }
+    document.getElementById('selectedTeam').textContent = selectedTeam !== null ? selectedTeam : 'null'
 }
 
 function selectedWonMatch() {
@@ -151,6 +153,11 @@ function selectedClearMatch() {
     }
 }
 
+function help() {
+    alert('<3')
+}
+
+
 function addListeners() {
     const teamCellIds = tdh.teamCellIds;
     for (const team in teamCellIds) {
@@ -165,14 +172,28 @@ function addListeners() {
     }
 
     document.addEventListener('keydown', (event) => {
+        if (event.key === 'p') {
+            document.getElementById('settingsButton').click()
+        }
+        if (event.key === 'h') {
+            document.getElementById('helpButton').click()
+        }
+        if (event.key === 'o') {
+            document.getElementById('saveButton').click()
+        }
+        if (event.key === 'l') {
+            document.getElementById('loadButton').click()
+        }
+
+
         if (event.key === 'w') {
-            selectedWonMatch()
+            document.getElementById('wonButton').click()
         }
         if (event.key === 'q') {
-            selectedLostMatch()
+            document.getElementById('lostButton').click()
         }
         if (event.key === 'c') {
-            selectedClearMatch()
+            document.getElementById('clearButton').click()
         }
 
         if (event.key === 'Escape') {
@@ -180,5 +201,13 @@ function addListeners() {
             setSelectedTeam(null)
         }
     })
+    document.getElementById('settingsButton').onclick = null
+    document.getElementById('helpButton').onclick = help
+    document.getElementById('saveButton').onclick = null
+    document.getElementById('loadButton').onclick = null
+
+    document.getElementById('wonButton').onclick = selectedWonMatch
+    document.getElementById('lostButton').onclick = selectedLostMatch
+    document.getElementById('clearButton').onclick = selectedClearMatch
 }
 addListeners()

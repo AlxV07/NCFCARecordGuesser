@@ -1,6 +1,10 @@
 @font-face {
     font-family: "Tahoma";
-    src: url("./Tahoma.ttf");
+    src: url("Tahoma.ttf");
+}
+
+body {
+    font-family: Tahoma, serif;
 }
 
 table {
@@ -11,7 +15,6 @@ table {
 }
 
 th {
-    font-family: Tahoma, serif;
     border: 1px solid black;
     text-align: center;
     background-color: #f2f2f2;
@@ -24,8 +27,6 @@ tr {
 }
 
 td {
-    font-family: Tahoma, serif;
-
     font-size: 10px;
     text-align: center;
 
@@ -35,6 +36,7 @@ td {
 .byeCell, .teamCell {
     border: 2px solid #dddddd;
     background-color: white;
+    caret-color: transparent;
 }
 .teamCell {
     font-size: 9px;
@@ -60,4 +62,32 @@ td {
     border: black solid 2px;
     top: 0;
     left: 0;
+    padding: 3px;
+
+    display: flex;
+    flex-direction: row;
+}
+#selectedTeam {
+    caret-color: transparent;
+}
+
+img {
+    height: 20px;
+    width: 25px;
+    margin-left: 5px;
+    border: black solid 1px;
+}
+
+button {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#credits {
+    text-align: right;
+    position: fixed;
+    top: 5px;
+    right: 3px;
+    font-size: 8px;
+    caret-color: transparent;
 }
