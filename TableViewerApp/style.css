@@ -32,6 +32,10 @@ td {
     padding: 0;
 }
 
+.byeCell, .teamCell {
+    border: 2px solid #dddddd;
+    background-color: white;
+}
 .teamCell {
     font-size: 9px;
     text-align: left;
@@ -42,21 +46,18 @@ td {
     padding: 0 2px;
     width: 50%;
     max-width: 50%;
-
-    border: 1px solid #dddddd;
-
-    background-color: white;
-
-    transition: 0.1s;
-
-    box-sizing: border-box;
-}
-.byeCell {
-    border: 1px solid #dddddd;
-    transition: 0.05s;
 }
 .teamCell:hover, .byeCell:hover {
     border-color: #ff00f7;
-    border-left-width: 2px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+}
 
+#bar {
+    position: fixed;
+    background-color: #f2f2f2;
+    width: 100%;
+    border: black solid 2px;
+    top: 0;
+    left: 0;
 }

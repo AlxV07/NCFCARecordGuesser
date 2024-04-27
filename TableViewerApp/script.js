@@ -1,53 +1,59 @@
-import {is_bye, tournament_data, rooms} from './tournament_data.js'
+import {rooms, is_bye, tournament_data} from './tournament_data.js'
 
 class TournamentDataHandler {
     constructor() {
-        this.cellidcount = 0
         this.idtocell = {}
-        this.cellDefaultColor = {}
+        this.cellidcounter = 0
 
         this.teamCellIds = {}
-        this.partnerCellId = {}
+        this.matchingCellId = {}
     }
 
     registerCell(cell) {
         const id = this.getNextCellId()
         this.idtocell[id] = cell
-        this.cellDefaultColor[id] = 'white'
+        cell.cellid = id
         return id
     }
 
     getNextCellId() {
-        let t = this.cellidcount
-        this.cellidcount += 1
+        let t = this.cellidcounter
+        this.cellidcounter += 1
         return t
     }
 
-    appendTeamCellId(team, cellId) {
+    addTeamCellId(team, cellId) {
         if (this.teamCellIds[team] === undefined) {
             this.teamCellIds[team] = []
         }
         this.teamCellIds[team].push(cellId)
     }
 
-    setPartnerCells(cell1, cell2) {
-        this.partnerCellId[cell1] = cell2
-        this.partnerCellId[cell2] = cell1
+    setMatchingCells(cell1, cell2) {
+        this.matchingCellId[cell1] = cell2
+        this.matchingCellId[cell2] = cell1
     }
 
     getCell(id) {
         return this.idtocell[id]
     }
-
-    setCellBgToDefault(id) {
-        this.idtocell[id].style.backgroundColor = this.cellDefaultColor[id]
-    }
 }
 const tdh = new TournamentDataHandler()
 
+class ColorsClass {
+    constructor() {
+        this.WON_MATCH = 'rgba(25,155,11,0.38)';
+        this.LOST_MATCH = 'rgba(185,0,0,0.47)'
+        this.CLEAR_MATCH = 'white'
+
+        this.SELECTED_CELL = 'orange'
+        this.SELECTED_TEAM_CELL = 'blue'
+    }
+}
+const Colors = new ColorsClass()
 
 function loadTournamentDataIntoTable() {
-    const tableBody = document.querySelector('#myTable tbody');
+    const tableBody = document.querySelector('#mainTable tbody');
 
     if (is_bye) {
         const byeRow = document.createElement('tr')
@@ -57,7 +63,7 @@ function loadTournamentDataIntoTable() {
             const team = round_data[0].trim()
 
             byeCell.textContent = team
-            tdh.appendTeamCellId(team, cellId)
+            tdh.addTeamCellId(team, cellId)
             byeRow.appendChild(byeCell)
         })
         tableBody.appendChild(byeRow)
@@ -77,17 +83,17 @@ function loadTournamentDataIntoTable() {
             const t1cellId = tdh.registerCell(t1cell);
             const t1 = matchup[0].trim()
             t1cell.textContent = t1;
-            tdh.appendTeamCellId(t1, t1cellId)
+            tdh.addTeamCellId(t1, t1cellId)
             matchupRow.appendChild(t1cell);
 
             const t2cell = document.createElement('td'); t2cell.classList.add('teamCell')
             const t2cellId = tdh.registerCell(t2cell)
             const t2 = matchup[1].trim()
             t2cell.textContent = t2;
-            tdh.appendTeamCellId(t2, t2cellId)
+            tdh.addTeamCellId(t2, t2cellId)
             matchupRow.appendChild(t2cell);
 
-            tdh.setPartnerCells(t1cellId, t2cellId)
+            tdh.setMatchingCells(t1cellId, t2cellId)
 
             matchupTable.appendChild(matchupRow);
             matchupCell.appendChild(matchupTable);
@@ -115,51 +121,33 @@ function setSelectedTeam(team) {
     selectedTeam = team
     if (team !== null) {
         for (const teamCellId of teamCellIds[team]) {
-            tdh.getCell(teamCellId).style.borderColor = 'black'
-            tdh.getCell(teamCellId).style.borderLeftWidth = '2px'
+            tdh.getCell(teamCellId).style.borderColor = Colors.SELECTED_TEAM_CELL
+            tdh.getCell(teamCellId).style.borderLeftWidth = '3px'
         }
     }
 }
 
-function selectedWin() {
-    const won = 'rgba(25,155,11,0.62)';
-    const lost = 'rgba(185,0,0,0.76)'
-
-    tdh.cellDefaultColor[selectedCellId] = won
-    tdh.getCell(selectedCellId).style.backgroundColor = won
-
-    const partnerCellId = tdh.partnerCellId[selectedCellId]
-    const partnerCell = tdh.getCell(tdh.partnerCellId[selectedCellId])
-    if (partnerCell !== undefined) {
-        tdh.cellDefaultColor[partnerCellId] = lost
-        tdh.getCell(partnerCellId).style.backgroundColor = lost
+function selectedWonMatch() {
+    tdh.getCell(selectedCellId).style.backgroundColor = Colors.WON_MATCH
+    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
+    if (matchingCell !== undefined) {
+        matchingCell.style.backgroundColor = Colors.LOST_MATCH
     }
 }
 
-function selectedLose() {
-    const won = 'rgba(25,155,11,0.62)'
-    const lost = 'rgba(185,0,0,0.76)'
-
-    tdh.cellDefaultColor[selectedCellId] = lost
-    tdh.getCell(selectedCellId).style.backgroundColor = lost
-
-    const partnerCellId = tdh.partnerCellId[selectedCellId]
-    const partnerCell = tdh.getCell(tdh.partnerCellId[selectedCellId])
-    if (partnerCell !== undefined) {
-        tdh.cellDefaultColor[partnerCellId] = won
-        tdh.getCell(partnerCellId).style.backgroundColor = won
+function selectedLostMatch() {
+    tdh.getCell(selectedCellId).style.backgroundColor = Colors.LOST_MATCH
+    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
+    if (matchingCell !== undefined) {
+        matchingCell.style.backgroundColor = Colors.WON_MATCH
     }
 }
 
-function selectedClear() {
-    tdh.cellDefaultColor[selectedCellId] = 'white'
-    tdh.getCell(selectedCellId).style.backgroundColor = 'white'
-
-    const partnerCellId = tdh.partnerCellId[selectedCellId]
-    const partnerCell = tdh.getCell(tdh.partnerCellId[selectedCellId])
-    if (partnerCell !== undefined) {
-        tdh.cellDefaultColor[partnerCellId] = 'white'
-        tdh.getCell(partnerCellId).style.backgroundColor = 'white'
+function selectedClearMatch() {
+    tdh.getCell(selectedCellId).style.backgroundColor = Colors.CLEAR_MATCH
+    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
+    if (matchingCell !== undefined) {
+        matchingCell.style.backgroundColor = Colors.CLEAR_MATCH
     }
 }
 
@@ -171,20 +159,20 @@ function addListeners() {
             cell.addEventListener('click', () => {
                 selectedCellId = cellId
                 setSelectedTeam(team)
-                cell.style.borderColor = 'yellow'
+                cell.style.borderColor = Colors.SELECTED_CELL
             })
         }
     }
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'w') {
-            selectedWin()
+            selectedWonMatch()
         }
-        if (event.key === 'l') {
-            selectedLose()
+        if (event.key === 'q') {
+            selectedLostMatch()
         }
         if (event.key === 'c') {
-            selectedClear()
+            selectedClearMatch()
         }
 
         if (event.key === 'Escape') {
