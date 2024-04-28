@@ -103,8 +103,32 @@ function loadTournamentDataIntoTable() {
         tableBody.appendChild(room_row);
     }
 }
-
 loadTournamentDataIntoTable();
+
+// Load process
+/*
+rd1.
+rd2.
+...
+raw postings
+ |
+ v
+database {
+ id: team
+ team: id
+
+ matchups: {
+    rd1: {
+        0: (t1id, t2id, cell1, cell2),
+        1: (t3id, t4id, cell3, cell4),
+        ...
+    }
+    rd2: {...}
+ }
+
+ ...cell.id = [rd, match_idx, t1_or_t2]
+}
+ */
 
 let selectedCellId = null
 let selectedTeam = null
