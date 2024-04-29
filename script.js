@@ -1,200 +1,208 @@
-import {rooms, is_bye, tournament_data} from './tournament_data.js'
+import {RawTournamentData, parse_raw_tournament_data} from './tournament_data.js'
+
+const Colors = {
+    WON_MATCH : 'rgba(25,155,11,0.38)',
+    LOST_MATCH : 'rgba(185,0,0,0.47)',
+    CLEAR_MATCH : 'white',
+    SELECTED_CELL : 'orange',
+    SELECTED_TEAM_CELL : 'blue',
+}
 
 class TournamentDataHandler {
     constructor() {
-        this.idtocell = {}
-        this.cellidcounter = 0
-
-        this.teamCellIds = {}
-        this.matchingCellId = {}
-    }
-
-    registerCell(cell) {
-        const id = this.getNextCellId()
-        this.idtocell[id] = cell
-        cell.cellid = id
-        return id
-    }
-
-    getNextCellId() {
-        let t = this.cellidcounter
-        this.cellidcounter += 1
-        return t
-    }
-
-    addTeamCellId(team, cellId) {
-        if (this.teamCellIds[team] === undefined) {
-            this.teamCellIds[team] = []
+        this.cells = {
+            0: {},
+            1: {},
+            2: {},
+            3: {},
+            4: {},
+            5: {},
         }
-        this.teamCellIds[team].push(cellId)
-    }
+        this.marks = {}
 
-    setMatchingCells(cell1, cell2) {
-        this.matchingCellId[cell1] = cell2
-        this.matchingCellId[cell2] = cell1
+        this.teamCells = {}
+        this.matchingCellId = {}
+
+        this.teamtoid = {}
+        this.idtoteam = {}
+        this.rounds = {}
+        this.rooms = {}
+
+        this.selectedCellId = null
+        this.selectedTeamId = null
     }
 
     getCell(id) {
-        return this.idtocell[id]
+        // id format: 7x...y
+        // x: round 0-based {0, 1, 2, 3, 4, 5}
+        // ...: roomid 1-2 digits
+        // y: {0, 1}  t1 or t2
+        // ... + y === '', x = round x bye cell
+        let s = id.toString().substring(1);
+        if (s.length === 1) {
+            return this.rounds[parseInt(id)]['BYE']
+        }
+        const round = parseInt(s.substring(0, 1))
+        const room = parseInt(s.substring(1, s.length - 1))
+        const t = parseInt(s.substring(s.length - 1))
+        return this.cells[round][room][t]
+    }
+
+    getMatchingCell(id) {
+        let s = id.toString().substring(1);
+        const round = parseInt(s.substring(0, 1))
+        const room = parseInt(s.substring(1, s.length - 1))
+        const t = parseInt(s.substring(s.length - 1)) === 0 ? 1 : 0
+        return this.cells[round][room][t]
+    }
+
+    removeAllTableCells() {
+        const tableBody = document.querySelector('#mainTable tbody');
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild)
+        }
+    }
+
+    generateTableCells(rooms) {
+        const tableBody = document.querySelector('#mainTable tbody');
+
+        // Build bye cells
+        const byeRow = document.createElement('tr')
+        for (let round = 0; round < 6; round++) {
+            const byeCell = document.createElement('td'); byeCell.classList.add('byeCell')
+            byeCell.cellid = '7' + round
+            this.cells[round]['BYE']  = byeCell
+            byeRow.appendChild(byeCell)
+        }
+
+        // Build room cells
+        for (let roomid = 0; roomid < rooms; roomid++) {
+            const roomRow = document.createElement('tr')
+
+            for (let round = 0; round < 6; round++) {
+                const roomCell = document.createElement('td');
+                const roomTable = document.createElement('table');
+                const roomInnerRow = document.createElement('tr');
+
+                const t1cell = document.createElement('td'); t1cell.classList.add('teamCell')
+                t1cell.cellid = parseInt('7' + round.toString() + roomid.toString() + '0')
+                const t2cell = document.createElement('td'); t2cell.classList.add('teamCell')
+                t2cell.cellid = parseInt('7' + round.toString() + roomid.toString() + '1')
+                roomInnerRow.appendChild(t1cell);
+                roomInnerRow.appendChild(t2cell);
+
+                this.cells[round][roomid] = [t1cell, t2cell]
+
+                roomTable.appendChild(roomInnerRow);
+                roomCell.appendChild(roomTable);
+                roomRow.appendChild(roomCell);
+            }
+            tableBody.appendChild(roomRow);
+        }
+    }
+
+    update() {
+        const teamtoid_idtoteam_rounds_rooms = parse_raw_tournament_data()
+        this.teamtoid = teamtoid_idtoteam_rounds_rooms[0]
+        this.idtoteam = teamtoid_idtoteam_rounds_rooms[1]
+        this.rounds = teamtoid_idtoteam_rounds_rooms[2]
+        this.rooms = teamtoid_idtoteam_rounds_rooms[3]
+        this.updateTableCells()
+    }
+
+    updateTableCells() {
+        this.removeAllTableCells()
+        this.generateTableCells(this.rooms)
+
+        this.teamCells = {}
+
+        for (let round = 0; round < 6; round++) {
+            if (this.rounds[round] === null) {
+                break
+            }
+            for (let roomid = 0; roomid < this.rooms; roomid++) {
+                const t1_t2 = this.rounds[round][roomid]
+                const c1_c2 = this.cells[round][roomid]
+                c1_c2[0].textContent = this.idtoteam[t1_t2[0]]
+                this.addTeamCell(t1_t2[0], c1_c2[0])
+                c1_c2[1].textContent = this.idtoteam[t1_t2[1]]
+                this.addTeamCell(t1_t2[1], c1_c2[1])
+            }
+        }
+        for (const team in this.teamCells) {
+            for (const cell of this.teamCells[team]) {
+                cell.addEventListener('click', () => {
+                    this.selectedCellId = cell.cellid
+                    this.setSelectedTeam(team)
+                    cell.style.borderColor = Colors.SELECTED_CELL
+                })
+            }
+        }
+    }
+
+    addTeamCell(team, cell) {
+        if (this.teamCells[team] === undefined) {
+            this.teamCells[team] = []
+        }
+        this.teamCells[team].push(cell)
+    }
+
+    setSelectedTeam(team) {
+        if (this.selectedTeamId !== null) {
+            for (const teamCell of this.teamCells[this.selectedTeamId]) {
+                teamCell.style.borderColor = ''; teamCell.style.borderLeftWidth = ''
+            }
+        }
+        this.selectedTeamId = team
+        if (team !== null) {
+            for (const teamCell of this.teamCells[team]) {
+                teamCell.style.borderColor = Colors.SELECTED_TEAM_CELL
+                teamCell.style.borderLeftWidth = '3px'
+            }
+        }
+        document.getElementById('selectedTeam').textContent = this.selectedTeamId !== null ? this.idtoteam[this.selectedTeamId] : 'null'
+    }
+
+    selectedWonMatch() {
+        if (this.selectedCellId === null) {return}
+        this.getCell(this.selectedCellId).style.backgroundColor = Colors.WON_MATCH
+        const matchingCell = this.getMatchingCell(this.selectedCellId)
+        if (matchingCell !== undefined) {
+            matchingCell.style.backgroundColor = Colors.LOST_MATCH
+        }
+    }
+
+    selectedLostMatch() {
+        if (this.selectedCellId === null) {return}
+        this.getCell(this.selectedCellId).style.backgroundColor = Colors.LOST_MATCH
+        const matchingCell = this.getMatchingCell(this.selectedCellId)
+        if (matchingCell !== undefined) {
+            matchingCell.style.backgroundColor = Colors.WON_MATCH
+        }
+    }
+
+    selectedClearMatch() {
+        if (this.selectedCellId === null) {return}
+        this.getCell(this.selectedCellId).style.backgroundColor = Colors.CLEAR_MATCH
+        const matchingCell = this.getMatchingCell(this.selectedCellId)
+        if (matchingCell !== undefined) {
+            matchingCell.style.backgroundColor = Colors.CLEAR_MATCH
+        }
+    }
+
+    setSelectedTeamNull() {
+        this.selectedCellId = null
+        this.setSelectedTeam(null)
     }
 }
 const tdh = new TournamentDataHandler()
-
-class ColorsClass {
-    constructor() {
-        this.WON_MATCH = 'rgba(25,155,11,0.38)';
-        this.LOST_MATCH = 'rgba(185,0,0,0.47)'
-        this.CLEAR_MATCH = 'white'
-
-        this.SELECTED_CELL = 'orange'
-        this.SELECTED_TEAM_CELL = 'blue'
-    }
-}
-const Colors = new ColorsClass()
-
-function loadTournamentDataIntoTable() {
-    const tableBody = document.querySelector('#mainTable tbody');
-
-    if (is_bye) {
-        const byeRow = document.createElement('tr')
-        tournament_data.forEach(round_data => {
-            const byeCell = document.createElement('td'); byeCell.classList.add('byeCell')
-            const cellId = tdh.registerCell(byeCell)
-            const team = round_data[0].trim()
-
-            byeCell.textContent = team
-            tdh.addTeamCellId(team, cellId)
-            byeRow.appendChild(byeCell)
-        })
-        tableBody.appendChild(byeRow)
-    }
-
-    for (let i = 0; i < rooms; i++) {
-        const room_row = document.createElement('tr')
-        tournament_data.forEach(round_data => {
-            const matchup = round_data[i + 1]
-            const matchupCell = document.createElement('td');
-            matchupCell.classList.add('matchupCell')
-
-            const matchupTable = document.createElement('table');
-            const matchupRow = document.createElement('tr');
-
-            const t1cell = document.createElement('td'); t1cell.classList.add('teamCell')
-            const t1cellId = tdh.registerCell(t1cell);
-            const t1 = matchup[0].trim()
-            t1cell.textContent = t1;
-            tdh.addTeamCellId(t1, t1cellId)
-            matchupRow.appendChild(t1cell);
-
-            const t2cell = document.createElement('td'); t2cell.classList.add('teamCell')
-            const t2cellId = tdh.registerCell(t2cell)
-            const t2 = matchup[1].trim()
-            t2cell.textContent = t2;
-            tdh.addTeamCellId(t2, t2cellId)
-            matchupRow.appendChild(t2cell);
-
-            tdh.setMatchingCells(t1cellId, t2cellId)
-
-            matchupTable.appendChild(matchupRow);
-            matchupCell.appendChild(matchupTable);
-            room_row.appendChild(matchupCell);
-
-        });
-        tableBody.appendChild(room_row);
-    }
-}
-loadTournamentDataIntoTable();
-
-// Load process
-/*
-rd1.
-rd2.
-...
-raw postings
- |
- v
-database {
- id: team
- team: id
-
- matchups: {
-    rd1: {
-        0: (t1id, t2id, cell1, cell2),
-        1: (t3id, t4id, cell3, cell4),
-        ...
-    }
-    rd2: {...}
- }
-
- ...cell.id = [rd, match_idx, t1_or_t2]
-}
- */
-
-let selectedCellId = null
-let selectedTeam = null
-
-function setSelectedTeam(team) {
-    const teamCellIds = tdh.teamCellIds;
-
-    if (selectedTeam !== null) {
-        for (const teamCellId of teamCellIds[selectedTeam]) {
-            tdh.getCell(teamCellId).style.borderColor = ''
-            tdh.getCell(teamCellId).style.borderLeftWidth = ''
-        }
-    }
-
-    selectedTeam = team
-    if (team !== null) {
-        for (const teamCellId of teamCellIds[team]) {
-            tdh.getCell(teamCellId).style.borderColor = Colors.SELECTED_TEAM_CELL
-            tdh.getCell(teamCellId).style.borderLeftWidth = '3px'
-        }
-    }
-    document.getElementById('selectedTeam').textContent = selectedTeam !== null ? selectedTeam : 'null'
-}
-
-function selectedWonMatch() {
-    tdh.getCell(selectedCellId).style.backgroundColor = Colors.WON_MATCH
-    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
-    if (matchingCell !== undefined) {
-        matchingCell.style.backgroundColor = Colors.LOST_MATCH
-    }
-}
-
-function selectedLostMatch() {
-    tdh.getCell(selectedCellId).style.backgroundColor = Colors.LOST_MATCH
-    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
-    if (matchingCell !== undefined) {
-        matchingCell.style.backgroundColor = Colors.WON_MATCH
-    }
-}
-
-function selectedClearMatch() {
-    tdh.getCell(selectedCellId).style.backgroundColor = Colors.CLEAR_MATCH
-    const matchingCell = tdh.getCell(tdh.matchingCellId[selectedCellId])
-    if (matchingCell !== undefined) {
-        matchingCell.style.backgroundColor = Colors.CLEAR_MATCH
-    }
-}
+tdh.update()
 
 function help() {
     alert('<3')
 }
 
-
 function addListeners() {
-    const teamCellIds = tdh.teamCellIds;
-    for (const team in teamCellIds) {
-        for (const cellId of teamCellIds[team]) {
-            const cell = tdh.getCell(cellId)
-            cell.addEventListener('click', () => {
-                selectedCellId = cellId
-                setSelectedTeam(team)
-                cell.style.borderColor = Colors.SELECTED_CELL
-            })
-        }
-    }
-
     document.addEventListener('keydown', (event) => {
         if (event.key === 'p') {
             document.getElementById('settingsButton').click()
@@ -221,8 +229,17 @@ function addListeners() {
         }
 
         if (event.key === 'Escape') {
-            selectedCellId = null
-            setSelectedTeam(null)
+            tdh.setSelectedTeamNull()
+        }
+
+        // Navigate Cells
+        if (event.key === 'ArrowUp') {
+        }
+        if (event.key === 'ArrowDown') {
+        }
+        if (event.key === 'ArrowLeft') {
+        }
+        if (event.key === 'ArrowRight') {
         }
     })
     document.getElementById('settingsButton').onclick = null
@@ -230,8 +247,11 @@ function addListeners() {
     document.getElementById('saveButton').onclick = null
     document.getElementById('loadButton').onclick = null
 
-    document.getElementById('wonButton').onclick = selectedWonMatch
-    document.getElementById('lostButton').onclick = selectedLostMatch
-    document.getElementById('clearButton').onclick = selectedClearMatch
+    document.getElementById('wonButton').onclick = () => {tdh.selectedWonMatch()}
+    document.getElementById('lostButton').onclick = () => {tdh.selectedLostMatch()}
+    document.getElementById('clearButton').onclick = () => {tdh.selectedClearMatch()}
 }
 addListeners()
+
+
+// TODO: Cell navigation, settings page, load postings, progress saving online
