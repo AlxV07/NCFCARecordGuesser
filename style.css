@@ -5,7 +5,6 @@
 
 body {
     font-family: Tahoma, serif;
-    background-color: #ffecfd;
 }
 
 table {
@@ -18,7 +17,7 @@ table {
 th {
     border: 1px solid black;
     text-align: center;
-    background-color: #ffe0fe;
+    background-color: #ececec;
     width: 16%;
 }
 
@@ -30,7 +29,7 @@ tr {
 td {
     font-size: 10px;
     text-align: center;
-    background-color: #ffcbfe;
+    /*background-color: #ffcbfe;*/
     padding: 0;
 }
 
@@ -57,7 +56,7 @@ td {
 
 #bar {
     position: fixed;
-    background-color: #fcdfff;
+    background-color: #ececec;
     width: 100%;
     border: black solid 2px;
     top: 0;
@@ -85,7 +84,7 @@ button {
     margin-right: 5px;
     font-size: 10px;
     height: fit-content;
-    background-color: #facaff;
+    /*background-color: #facaff;*/
 }
 
 label {
