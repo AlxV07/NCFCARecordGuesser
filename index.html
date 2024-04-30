@@ -7,7 +7,6 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" sizes="16x16 32x32 64x64" href="./potat.jpg">
 </head>
-
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LWPL4S0WLP"></script>
 <script>
     window.dataLayer = window.dataLayer || [];
@@ -27,8 +26,10 @@
     <label>||</label>
 
     <label>File:</label>
-    <button id="saveButton">SaveNI (o)</button>
-    <button id="loadButton">LoadNI (l)</button>
+    <button id="overrideButton">Override (k)</button>
+    <button id="loadButton">Load (l)</button>
+    <button id="saveButton" disabled="disabled">Save (o)</button>
+    <label id="saveLog">null</label>
 
     <label>||</label>
     <label>Selected Team:</label>
@@ -63,7 +64,9 @@
 
 <div contenteditable="true" id="dataInput"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script type="module" src="script.js"></script>
+
 
 </body>
 </html>
