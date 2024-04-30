@@ -3,7 +3,7 @@ import {RawTournamentData, parse_raw_tournament_data} from './tournament_data.js
 const Colors = {
     WON_MATCH : 'rgba(25,155,11,0.38)',
     LOST_MATCH : 'rgba(185,0,0,0.47)',
-    CLEAR_MATCH : 'white',
+    CLEAR_MATCH : 'rgba(255,245,251,0.47)',
     SELECTED_CELL : 'orange',
     SELECTED_TEAM_CELL : 'blue',
 }

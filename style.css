@@ -5,6 +5,7 @@
 
 body {
     font-family: Tahoma, serif;
+    background-color: #ffecfd;
 }
 
 table {
@@ -17,7 +18,7 @@ table {
 th {
     border: 1px solid black;
     text-align: center;
-    background-color: #f2f2f2;
+    background-color: #ffe0fe;
     width: 16%;
 }
 
@@ -29,13 +30,12 @@ tr {
 td {
     font-size: 10px;
     text-align: center;
-
+    background-color: #ffcbfe;
     padding: 0;
 }
 
 .byeCell, .teamCell {
     border: 2px solid #dddddd;
-    background-color: white;
     caret-color: transparent;
 }
 .teamCell {
@@ -57,7 +57,7 @@ td {
 
 #bar {
     position: fixed;
-    background-color: #f2f2f2;
+    background-color: #fcdfff;
     width: 100%;
     border: black solid 2px;
     top: 0;
@@ -85,6 +85,7 @@ button {
     margin-right: 5px;
     font-size: 10px;
     height: fit-content;
+    background-color: #facaff;
 }
 
 label {
