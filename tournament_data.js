@@ -1,232 +1,59 @@
 export const RawTournamentData = {
     raw_round1:
-        `BYE
-Li, E. / Li, E.
-Room 001
-Gary Jr, D. / Vanvalkenburg, L. (Aff)
-Oliver, E. / Osborne, J. (Neg)
-Room 002
-Butts, C. / Paul, J. (Aff)
-Chen, H. / Spencer, N. (Neg)
-Room 003
-Parsley, C. / Tong, L. (Aff)
-Majors, B. / Majors, L. (Neg)
-Room 004
-Alles, C. / Imp, A. (Aff)
-Dipersio, L. / Giles, A. (Neg)
-Room 005
-Swan, S. / Thompson, M. (Aff)
-Jonson, E. / Young, A. (Neg)
-Room 006
-Oliver, I. / Osborne, L. (Aff)
-Hogancamp, R. / Martin, E. (Neg)
-Room 007
-Glessner, A. / Pratt, A. (Aff)
-Allgood, S. / Mcintyre, B. (Neg)
-Room 008
-Brindis De Salas, C. / Gardner, M. (Aff)
-Ballard, A. / Ballard, K. (Neg)
-Room 009
-Timari, B. / Timari, N. (Aff)
-Fairfax, E. / Gordon, W. (Neg)
-Room 010
-Erdner, J. / Ridings, P. (Aff)
-Canna, C. / Johnson, D. (Neg)
-Room 011
-Lewis, T. / Singh, M. (Aff)
-Castrinos, J. / Wanner, S. (Neg)
-Room 012
-Brindis De Salas, I. / Stanton, P. (Aff)
-Johnson, K. / Storz, E. (Neg)
-Room 013
-John, E. / Kimzey, C. (Aff)
-Slayton, E. / Slayton, J. (Neg)
-Room 014
-Barron, T. / Wentworth, N. (Aff)
-Piper, I. / Stokarski, S. (Neg)
-Room 015
-Graham, A. / Reader, N. (Aff)
-Yoder, X. / Yoder, X. (Neg)
-Room 016
-Hill, I. / Hill, R. (Aff)
-Ellsworth, J. / Kelley, T. (Neg)
-Room 017
-Slayton, D. / Slayton, J. (Aff)
-Hirschy, J. / Nicholes, B. (Neg)
-Room 018
-Price, C. / Price, E. (Aff)
-Smith, L. / Smith, N. (Neg)
-Room 019
-Baker, J. / Slobodnik, D. (Aff)
-Lombardozzi, D. / Tirone, C. (Neg)
-Room 020
-Canna, C. / Yorke, S. (Aff)
-Jin, E. / Li, N. (Neg)
-Room 021
-Chahyadi, J. / Springer, J. (Aff)
-Kean, C. / Williams, M. (Neg)
-Room 022
-Gardner, J. / Luft, N. (Aff)
-Courville, J. / Davis, S. (Neg)
-Room 023
-Kuhiwczak, M. / Kuhiwczak, M. (Aff)
-James, B. / Offutt, W. (Neg)
-Room 024
-Elshoff, L. / Thomas, A. (Aff)
-Aryani, J. / Dickey, A. (Neg)
-Room 025
-Kirkpatrick, K. / Mcintyre, T. (Aff)
-Noble, A. / Sun, D. (Neg)
-Room 026
-Baird, R. / Brinski, W. (Aff)
-Formo, A. / Zylstra, C. (Neg)
-Room 027
-Green, I. / Lee, J. (Aff)
-Krabill, K. / Krabill, T. (Neg)
-Room 028
-Mccoy, C. / Mccoy, P. (Aff)
-Duppenthaler, A. / Graves, I. (Neg)
-Room 029
-Davis, O. / Miller, M. (Aff)
-Brummund, D. / Mckay, L. (Neg)
-Room 030
-Chen, A. / Kuykendall, W. (Aff)
-Mcdonald, B. / Mcdonald, S. (Neg)
-Room 031
-Mann, A. / Smith, M. (Aff)
-Lewis, J. / Wood, B. (Neg)
-Room 032
-Chen, A. / Chen, J. (Aff)
-Brewster, A. / Raymer, W. (Neg)
-Room 033
-Clark, J. / Pedone, J. (Aff)
-Daniel, C. / Light, A. (Neg)
-Room 034
-Graham, C. / Pruett, E. (Aff)
-Glass, A. / Glass, B. (Neg)
-Room 035
-Piper, J. / Piper, M. (Aff)
-Sabo, S. / Wilson, C. (Neg)
-Room 036
-Pergola, E. / Slayton, A. (Aff)
-Brindis De Salas, T. / Gardner, M. (Neg)
-Room 037
-Bonar, L. / Young, R. (Aff)
-Sussmann, B. / Sussmann, X. (Neg)`,
-    raw_round2:
-        `BYE
-Glass, A. / Glass, B.
-Room 001
-Slayton, E. / Slayton, J. (Aff)
-Clark, J. / Pedone, J. (Neg)
-Room 002
-Ellsworth, J. / Kelley, T. (Aff)
-Gardner, J. / Luft, N. (Neg)
-Room 003
-Jin, E. / Li, N. (Aff)
-Graham, A. / Reader, N. (Neg)
-Room 004
-Li, E. / Li, E. (Aff)
-Graham, C. / Pruett, E. (Neg)
-Room 005
-Daniel, C. / Light, A. (Aff)
-Chen, A. / Kuykendall, W. (Neg)
-Room 006
-Hirschy, J. / Nicholes, B. (Aff)
-Hill, I. / Hill, R. (Neg)
-Room 007
-Dipersio, L. / Giles, A. (Aff)
-Butts, C. / Paul, J. (Neg)
-Room 008
-Oliver, E. / Osborne, J. (Aff)
-Barron, T. / Wentworth, N. (Neg)
-Room 009
-Lewis, J. / Wood, B. (Aff)
-Swan, S. / Thompson, M. (Neg)
-Room 010
-Sussmann, B. / Sussmann, X. (Aff)
-Brindis De Salas, C. / Gardner, M. (Neg)
-Room 011
-Courville, J. / Davis, S. (Aff)
-Oliver, I. / Osborne, L. (Neg)
-Room 012
-Chen, H. / Spencer, N. (Aff)
-Chahyadi, J. / Springer, J. (Neg)
-Room 013
-Jonson, E. / Young, A. (Aff)
-Kirkpatrick, K. / Mcintyre, T. (Neg)
-Room 014
-Yoder, X. / Yoder, X. (Aff)
-Lewis, T. / Singh, M. (Neg)
-Room 015
-Canna, C. / Johnson, D. (Aff)
-Parsley, C. / Tong, L. (Neg)
-Room 016
-Piper, I. / Stokarski, S. (Aff)
-Elshoff, L. / Thomas, A. (Neg)
-Room 017
-Mcdonald, B. / Mcdonald, S. (Aff)
-Pergola, E. / Slayton, A. (Neg)
-Room 018
-Formo, A. / Zylstra, C. (Aff)
-Glessner, A. / Pratt, A. (Neg)
-Room 019
-James, B. / Offutt, W. (Aff)
-Brindis De Salas, I. / Stanton, P. (Neg)
-Room 020
-Lombardozzi, D. / Tirone, C. (Aff)
-Kuhiwczak, M. / Kuhiwczak, M. (Neg)
-Room 021
-Krabill, K. / Krabill, T. (Aff)
-Alles, C. / Imp, A. (Neg)
-Room 022
-Johnson, K. / Storz, E. (Aff)
-Mccoy, C. / Mccoy, P. (Neg)
-Room 023
-Noble, A. / Sun, D. (Aff)
-Davis, O. / Miller, M. (Neg)
-Room 024
-Ballard, A. / Ballard, K. (Aff)
-Slayton, D. / Slayton, J. (Neg)
-Room 025
-Brewster, A. / Raymer, W. (Aff)
-Green, I. / Lee, J. (Neg)
-Room 026
-Duppenthaler, A. / Graves, I. (Aff)
-Erdner, J. / Ridings, P. (Neg)
-Room 027
-Brindis De Salas, T. / Gardner, M. (Aff)
-Timari, B. / Timari, N. (Neg)
-Room 028
-Kean, C. / Williams, M. (Aff)
-John, E. / Kimzey, C. (Neg)
-Room 029
-Brummund, D. / Mckay, L. (Aff)
-Canna, C. / Yorke, S. (Neg)
-Room 030
-Castrinos, J. / Wanner, S. (Aff)
-Baird, R. / Brinski, W. (Neg)
-Room 031
-Majors, B. / Majors, L. (Aff)
-Piper, J. / Piper, M. (Neg)
-Room 032
-Hogancamp, R. / Martin, E. (Aff)
-Baker, J. / Slobodnik, D. (Neg)
-Room 033
-Fairfax, E. / Gordon, W. (Aff)
-Bonar, L. / Young, R. (Neg)
-Room 034
-Sabo, S. / Wilson, C. (Aff)
-Gary Jr, D. / Vanvalkenburg, L. (Neg)
-Room 035
-Allgood, S. / Mcintyre, B. (Aff)
-Chen, A. / Chen, J. (Neg)
-Room 036
-Aryani, J. / Dickey, A. (Aff)
-Price, C. / Price, E. (Neg)
-Room 037
-Smith, L. / Smith, N. (Aff)
-Mann, A. / Smith, M. (Neg)
+        `Heath Harwick - 104
+bechtold, A. / langkamp, N. (Aff)
+hightower, N. / husted, D. (Neg)
+Heath Harwick - 131
+behring, T. / berkau, M. (Aff)
+phillips, D. / phillips, J. (Neg)
+Heath Harwick - 132
+hoffpauir, R. / oyler, J. (Aff)
+ballard, A. / ballard, E. (Neg)
+Longview Hall - 134
+brewster, A. / raymer, W. (Aff)
+hewitt, C. / perry, E. (Neg)
+Longview Hall - 136
+gouge, R. / sabo, J. (Aff)
+ramsay, D. / ramsay, P. (Neg)
+Longview Hall - 137
+brown, N. / sanchez, N. (Aff)
+lewis, T. / singh, M. (Neg)
+Longview Hall - 139
+cobbs, S. / parsley, C. (Aff)
+bott, P. / bott, S. (Neg)
+Longview Hall - 139A
+brewster, S. / raymer, H. (Aff)
+clayburn, H. / kwan, L. (Neg)
+Longview Hall - 140
+amason, S. / hintze, A. (Aff)
+gutierrez, C. / gutierrez, R. (Neg)
+Longview Hall - 140A
+gary, C. / kirkpatrick, K. (Aff)
+amaya, L. / klause, D. (Neg)
+Longview Hall - 141
+brown, I. / brown, L. (Aff)
+hall, M. / hebert, R. (Neg)
+Glaske Center Engineering - C101- Berry Aud
+chen, A. / o'connors, L. (Aff)
+ballard, J. / gutierrez, B. (Neg)
+Glaske Center Engineering - C103
+lannie, D. / sabo, S. (Aff)
+cordova, N. / cortez, A. (Neg)
+Glaske Center Engineering - C105
+winfield, A. / winfield, L. (Aff)
+cortez, L. / paone, J. (Neg)
+Glaske Center Engineering - C107
+trull, L. / trull, O. (Aff)
+phillips, A. / phillips, M. (Neg)
+Glaske Center Engineering - C108
+vega, D. / williams, L. (Aff)
+cover, T. / shen, N. (Neg)
+Glaske Center Engineering - C109
+culp, E. / culp, W. (Aff)
+centeno, J. / cordova, M. (Neg)
+Glaske Center Engineering - C115
+bell, E. / oliver, J. (Aff)
+shoda, K. / woodward, A. (Neg)
 `,
     raw_round3:
         `
